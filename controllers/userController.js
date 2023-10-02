@@ -11,33 +11,41 @@ exports.signUpUser = async (req, res) => {
 
     // Check if the email is already registered
     const existingUser = await userRagistation.findOne({ email });
-    if (existingUser) {
+    if (existingUser && existingUser.password !== "") {
       return res.status(400).json({ message: "Email already exists" });
+    } else if (existingUser && existingUser.password === "") {
+      const userData = {
+        firstName: existingUser.firstName,
+        lastName: existingUser.lastName,
+        email: existingUser.email,
+      };
+      res.status(201).json({ userData });
+    } else if (!existingUser) {
+      const hashedPassword = await hashPassword(password);
+
+      // Create a new user document
+      const newUser = new userRagistation({
+        firstName,
+        lastName,
+        email,
+        password: hashedPassword, // Save the hashed password
+      });
+
+      // Save the user document to MongoDB
+      await newUser.save();
+      const userData = {
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        email: newUser.email,
+      };
+
+      // Generate a JWT token for the new user
+      const token = generateToken(newUser._id);
+
+      res.status(200).json({ message: "Signup successful", userData, token });
     }
 
     // Hash the password using the middleware
-    const hashedPassword = await hashPassword(password);
-
-    // Create a new user document
-    const newUser = new userRagistation({
-      firstName,
-      lastName,
-      email,
-      password: hashedPassword, // Save the hashed password
-    });
-
-    // Save the user document to MongoDB
-    await newUser.save();
-    const userData = {
-      firstName: newUser.firstName,
-      lastName: newUser.lastName,
-      email: newUser.email,
-    };
-
-    // Generate a JWT token for the new user
-    const token = generateToken(newUser._id);
-
-    res.status(201).json({ message: "Signup successful", userData, token });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
