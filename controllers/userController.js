@@ -70,7 +70,7 @@ exports.loginUser = async (req, res) => {
 
     res.status(200).json({ message: "Login successful", userData, token });
   } catch (error) {
-    handleErrors(res, error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 exports.setPassword = async (req, res) => {
@@ -93,6 +93,6 @@ exports.setPassword = async (req, res) => {
       .status(200)
       .json({ message: "Password set successfully", token });
   } catch (error) {
-    handleErrors(res, error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };

@@ -85,11 +85,6 @@ exports.githubAuth = async (req, res) => {
     const existingUser = await userRagistation.findOne({
       email: userEmails[0], // Assuming you're using the primary email
     });
-    const userData = {
-      firstName: newUser.firstName,
-      lastName: newUser.lastName,
-      email: newUser.email,
-    };
 
     if (existingUser && existingUser.password !== "") {
       const userData = {
@@ -114,11 +109,22 @@ exports.githubAuth = async (req, res) => {
       });
 
       await newUser.save();
+      const userData = {
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        email: newUser.email,
+      };
 
       res.status(201).json({
         userData,
       });
     } else if (existingUser && existingUser.password === "") {
+      const userData = {
+        firstName: existingUser.firstName,
+        lastName: existingUser.lastName,
+        email: existingUser.email,
+      };
+
       res.status(201).json({
         userData,
       });
